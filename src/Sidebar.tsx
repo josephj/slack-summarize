@@ -15,12 +15,20 @@ import {
   NumberDecrementStepper,
   Link,
   Box,
+  InputGroup,
+  InputRightElement,
+  Spinner,
 } from '@chakra-ui/react';
 import { useForm, Controller } from 'react-hook-form';
 import useFormPersist from 'react-hook-form-persist';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { FiExternalLink } from 'react-icons/fi';
+import { FiExternalLink, FiCheck, FiX } from 'react-icons/fi';
+import {
+  validateSlackToken,
+  validateOpenAIToken,
+} from './services/slackService';
+import { useCallback, useEffect, useState } from 'react';
 
 const settingsSchema = z.object({
   slackToken: z.string().min(1, 'Slack token is required'),
@@ -36,7 +44,19 @@ type Props = {
   onSettingsChange: (settings: SettingsData) => void;
 };
 
+type ValidationStatus = 'idle' | 'validating' | 'valid' | 'invalid';
+
+type TokenValidation = {
+  slackToken: ValidationStatus;
+  openAiToken: ValidationStatus;
+};
+
 const Sidebar = ({ onSettingsChange }: Props) => {
+  const [validation, setValidation] = useState<TokenValidation>({
+    slackToken: 'idle',
+    openAiToken: 'idle',
+  });
+
   const {
     control,
     formState: { errors },
@@ -65,6 +85,48 @@ const Sidebar = ({ onSettingsChange }: Props) => {
     }
   });
 
+  const validateToken = useCallback(
+    async (type: 'slackToken' | 'openAiToken', token: string) => {
+      if (!token) {
+        setValidation((prev) => ({ ...prev, [type]: 'idle' }));
+        return;
+      }
+
+      setValidation((prev) => ({ ...prev, [type]: 'validating' }));
+
+      const isValid = await (type === 'slackToken'
+        ? validateSlackToken(token)
+        : validateOpenAIToken(token));
+
+      setValidation((prev) => ({
+        ...prev,
+        [type]: isValid ? 'valid' : 'invalid',
+      }));
+    },
+    []
+  );
+
+  useEffect(() => {
+    const slackToken = watch('slackToken');
+    const openAiToken = watch('openAiToken');
+
+    if (slackToken) validateToken('slackToken', slackToken);
+    if (openAiToken) validateToken('openAiToken', openAiToken);
+  }, [validateToken, watch]);
+
+  const ValidationIcon = ({ status }: { status: ValidationStatus }) => {
+    switch (status) {
+      case 'validating':
+        return <Spinner size="sm" />;
+      case 'valid':
+        return <FiCheck color="green" />;
+      case 'invalid':
+        return <FiX color="red" />;
+      default:
+        return null;
+    }
+  };
+
   return (
     <VStack spacing={6} align="stretch">
       <Text fontSize="xl" fontWeight="bold" mb={2}>
@@ -77,7 +139,19 @@ const Sidebar = ({ onSettingsChange }: Props) => {
         render={({ field }) => (
           <FormControl isInvalid={!!errors.slackToken}>
             <FormLabel>Slack Token</FormLabel>
-            <Input type="password" {...field} />
+            <InputGroup>
+              <Input
+                type="password"
+                {...field}
+                onChange={(e) => {
+                  field.onChange(e);
+                  validateToken('slackToken', e.target.value);
+                }}
+              />
+              <InputRightElement>
+                <ValidationIcon status={validation.slackToken} />
+              </InputRightElement>
+            </InputGroup>
             <FormHelperText>
               <Link
                 href="https://api.slack.com/apps"
@@ -100,7 +174,19 @@ const Sidebar = ({ onSettingsChange }: Props) => {
         render={({ field }) => (
           <FormControl isInvalid={!!errors.openAiToken}>
             <FormLabel>OpenAI Token</FormLabel>
-            <Input type="password" {...field} />
+            <InputGroup>
+              <Input
+                type="password"
+                {...field}
+                onChange={(e) => {
+                  field.onChange(e);
+                  validateToken('openAiToken', e.target.value);
+                }}
+              />
+              <InputRightElement>
+                <ValidationIcon status={validation.openAiToken} />
+              </InputRightElement>
+            </InputGroup>
             <FormHelperText>
               <Link
                 href="https://platform.openai.com/api-keys"

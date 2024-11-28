@@ -57,3 +57,32 @@ export const generateSummary = async (
 
   return response.data.choices[0]?.message?.content || '';
 };
+
+export const validateSlackToken = async (token: string) => {
+  try {
+    const response = await fetch('https://slack.com/api/auth.test', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    const data = await response.json();
+    return data.ok === true;
+  } catch {
+    return false;
+  }
+};
+
+export const validateOpenAIToken = async (token: string) => {
+  try {
+    const response = await fetch('https://api.openai.com/v1/models', {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.status === 200;
+  } catch {
+    return false;
+  }
+};

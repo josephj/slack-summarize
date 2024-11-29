@@ -1,42 +1,19 @@
 {
-  "name": "summarize-slack",
+  "name": "slack-summariser",
   "private": true,
-  "version": "0.0.0",
-  "type": "module",
+  "workspaces": [
+    "apps/api",
+    "apps/web",
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "vite",
-    "lint": "eslint .",
-    "preview": "vite preview",
-    "build": "vite build",
-    "check-types": "tsc --noEmit"
-  },
-  "dependencies": {
-    "@chakra-ui/react": "^2.0.0",
-    "@emotion/react": "^11.0.0",
-    "@emotion/styled": "^11.0.0",
-    "@hookform/resolvers": "^3.0.0",
-    "framer-motion": "^6.0.0",
-    "openai": "^3.0.0",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "react-hook-form": "^7.0.0",
-    "react-hook-form-persist": "^3.0.0",
-    "react-icons": "^5.0.1",
-    "zod": "^3.0.0"
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "turbo run lint",
+    "clean": "turbo run clean && rm -rf node_modules"
   },
   "devDependencies": {
-    "@eslint/js": "^9.15.0",
-    "@types/react": "^18.3.12",
-    "@types/react-dom": "^18.3.1",
-    "@vitejs/plugin-react": "^4.3.4",
-    "eslint": "^9.15.0",
-    "eslint-plugin-react-hooks": "^5.0.0",
-    "eslint-plugin-react-refresh": "^0.4.14",
-    "globals": "^15.12.0",
-    "turbo": "^2.3.3",
-    "typescript": "~5.6.2",
-    "typescript-eslint": "^8.15.0",
-    "vite": "^6.0.1"
+    "turbo": "latest"
   },
   "packageManager": "pnpm@9.9.0"
 }

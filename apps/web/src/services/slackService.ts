@@ -1,4 +1,4 @@
-import { Configuration, OpenAIApi } from 'openai';
+import OpenAI from 'openai';
 
 type SlackApiMessage = {
   user: string;
@@ -32,10 +32,9 @@ export const generateSummary = async (
   prompt: string,
   language: string
 ): Promise<string> => {
-  const configuration = new Configuration({
+  const openai = new OpenAI({
     apiKey: openAiToken,
   });
-  const openai = new OpenAIApi(configuration);
 
   const conversationText = messages
     .map((msg) => `${msg.user}: ${msg.text}`)
